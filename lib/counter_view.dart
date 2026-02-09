@@ -13,13 +13,14 @@ class _CounterViewState extends State<CounterView> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(title: Text('LogBook: SRP'), centerTitle: true),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.only(left: 16, right: 16, top: 32),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.max,
             spacing: 16,
             children: [
@@ -48,6 +49,11 @@ class _CounterViewState extends State<CounterView> {
                   ),
                 ],
               ),
+              FilledButton.icon(
+                icon: Icon(Icons.rotate_left),
+                onPressed: () => setState(() => _controller.reset()),
+                label: Text('Reset'),
+              ),
               Divider(indent: 16, endIndent: 16),
               Text('Step / Langkah: ${_controller.step}'),
               Slider(
@@ -60,6 +66,35 @@ class _CounterViewState extends State<CounterView> {
                 divisions: 9,
                 label: 'Step',
               ),
+              Divider(indent: 16, endIndent: 16),
+              Text('Riwayat'),
+              if (_controller.history.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      'Belum Ada Riwayat',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: theme.disabledColor),
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView(
+                    children: [
+                      ..._controller.history.reversed.map(
+                        (e) => Card(
+                          color: e.$3,
+                          child: ListTile(
+                            leading: Icon(Icons.history_sharp),
+                            title: Text(e.$1),
+                            subtitle: Text(e.$2),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
