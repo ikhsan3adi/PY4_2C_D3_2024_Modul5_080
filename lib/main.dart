@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:logbook_app_080/counter_view.dart';
+import 'package:logbook_app_080/features/onboarding/onboarding_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,9 +29,9 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.red),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
       ),
-      home: const CounterView(),
+      home: const OnboardingView(),
     );
   }
 }

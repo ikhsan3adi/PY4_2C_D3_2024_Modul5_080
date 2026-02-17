@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:logbook_app_080/counter_controller.dart';
+import 'package:logbook_app_080/features/logbook/counter_controller.dart';
 
 class CounterView extends StatefulWidget {
   const CounterView({super.key});
