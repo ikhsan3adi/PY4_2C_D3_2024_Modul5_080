@@ -54,3 +54,5 @@ app.*.map.json
 .apk-release
 
 .env
+
+*.g.dart
