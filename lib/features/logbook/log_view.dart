@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:logbook_app_080/constants/app_constants.dart';
 import 'package:logbook_app_080/features/logbook/log_controller.dart';
 import 'package:logbook_app_080/features/logbook/models/log_model.dart';
+import 'package:logbook_app_080/features/logbook/widgets/log_item_widget.dart';
 import 'package:logbook_app_080/features/onboarding/onboarding_view.dart';
-import 'package:logbook_app_080/helpers/date_helper.dart';
 import 'package:logbook_app_080/helpers/log_helper.dart';
 import 'package:logbook_app_080/services/mongo_service.dart';
 
@@ -454,181 +454,29 @@ class _LogViewState extends State<LogView> {
                       itemCount: currentLogs.length,
                       itemBuilder: (context, index) {
                         final log = currentLogs[index];
-                        final cardColor =
-                            AppConstants.categoryColors[log.category] ??
-                            theme.cardColor;
-                        final categoryIcon =
-                            AppConstants.categoryIcons[log.category] ??
-                            Icons.note;
-                        final accentColor =
-                            AppConstants.categoryAccentColors[log.category] ??
-                            Colors.black;
 
-                        return Dismissible(
-                          key: Key(log.id?.oid ?? log.timestamp),
-                          confirmDismiss: (direction) async {
-                            if (direction == DismissDirection.endToStart) {
-                              return await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Konfirmasi Hapus'),
-                                  content: const Text(
-                                    'Apakah Anda yakin ingin menghapus catatan ini?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      child: const Text('Batal'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, true),
-                                      child: const Text(
-                                        'Hapus',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            } else if (direction ==
-                                DismissDirection.startToEnd) {
-                              _showEditLogDialog(index, log);
-                            }
+                        return LogItemWidget(
+                          log: log,
+                          editAction: (log) => _showEditLogDialog(index, log),
+                          deleteAction: (_) => _showDeleteConfirmation(index),
+                          swipeToLeftAction: () async {
+                            _showDeleteConfirmation(index);
                             return null;
                           },
-                          onDismissed: (direction) async {
-                            if (direction == DismissDirection.endToStart) {
-                              await _controller.removeLog(index);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Catatan dihapus'),
-                                  ),
-                                );
-                              }
+                          swipeToRightAction: () async {
+                            _showEditLogDialog(index, log);
+                            return null;
+                          },
+                          afterSwipeToLeft: () async {
+                            await _controller.removeLog(index);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Catatan dihapus'),
+                                ),
+                              );
                             }
                           },
-                          background: Container(
-                            alignment: Alignment.centerLeft,
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            padding: const EdgeInsets.only(left: 20),
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(Icons.edit, color: Colors.white),
-                          ),
-                          secondaryBackground: Container(
-                            alignment: Alignment.centerRight,
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            padding: const EdgeInsets.only(right: 20),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                            ),
-                          ),
-                          child: Card(
-                            color: cardColor,
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            clipBehavior: Clip.hardEdge,
-                            child: ListTile(
-                              leading: Icon(categoryIcon, color: accentColor),
-                              title: Text(
-                                log.title,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(log.description),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Chip(
-                                        backgroundColor: Colors.white
-                                            .withValues(alpha: 0.5),
-                                        avatar: Icon(
-                                          categoryIcon,
-                                          size: 14,
-                                          color: accentColor,
-                                        ),
-                                        label: Text(
-                                          log.category,
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: accentColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        visualDensity: VisualDensity.compact,
-                                        padding: EdgeInsets.zero,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Icon(
-                                        Icons.cloud_done,
-                                        size: 14,
-                                        color: Colors.green.shade700,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        DateHelper.formatTimestamp(
-                                          log.timestamp,
-                                        ),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: theme.disabledColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              isThreeLine: true,
-                              trailing: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: IconButton(
-                                      padding: EdgeInsets.zero,
-                                      iconSize: 20,
-                                      icon: const Icon(
-                                        Icons.edit,
-                                        color: Colors.blue,
-                                      ),
-                                      onPressed: () =>
-                                          _showEditLogDialog(index, log),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: IconButton(
-                                      padding: EdgeInsets.zero,
-                                      iconSize: 20,
-                                      icon: const Icon(
-                                        Icons.delete,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () =>
-                                          _showDeleteConfirmation(index),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
                         );
                       },
                     ),
