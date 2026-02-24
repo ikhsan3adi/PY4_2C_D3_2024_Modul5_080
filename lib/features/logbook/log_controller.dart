@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:logbook_app_080/features/logbook/models/log_model.dart';
 import 'package:logbook_app_080/helpers/log_helper.dart';
 import 'package:logbook_app_080/services/mongo_service.dart';
@@ -9,8 +10,23 @@ class LogController {
   final ValueNotifier<List<LogModel>> filteredLogs = ValueNotifier([]);
 
   final String username;
+  final String authorId;
+  final String teamId;
 
-  LogController({required this.username});
+  final _box = Hive.box<LogModel>('offline_logs');
+
+  LogController({
+    required this.username,
+    required this.authorId,
+    required this.teamId,
+  }) {
+    logsNotifier.addListener(() => filteredLogs.value = logsNotifier.value);
+  }
+
+  void dispose() {
+    logsNotifier.dispose();
+    filteredLogs.dispose();
+  }
 
   List<LogModel> get logs => logsNotifier.value;
 
@@ -18,23 +34,26 @@ class LogController {
     String title,
     String desc, {
     String category = 'Pribadi',
+    String? authorId,
+    String? teamId,
   }) async {
     final newLog = LogModel(
-      id: ObjectId(),
+      id: ObjectId().oid,
       username: username,
       title: title,
       description: desc,
       timestamp: DateTime.now().toString(),
       category: category,
+      authorId: authorId ?? this.authorId,
+      teamId: teamId ?? this.teamId,
     );
+
+    await _box.add(newLog);
+    logsNotifier.value = [...logsNotifier.value, newLog];
+    // filteredLogs.value = [...logsNotifier.value, newLog];
 
     try {
       await MongoService().insertLog(newLog);
-
-      final currentLogs = List<LogModel>.from(logsNotifier.value);
-      currentLogs.add(newLog);
-      logsNotifier.value = currentLogs;
-      filteredLogs.value = currentLogs;
 
       await LogHelper.writeLog(
         "SUCCESS: Tambah data '${newLog.title}'",
@@ -65,14 +84,17 @@ class LogController {
       description: desc,
       timestamp: DateTime.now().toString(),
       category: category,
+      authorId: authorId,
+      teamId: teamId,
     );
+
+    await _box.putAt(index, updatedLog);
+    currentLogs[index] = updatedLog;
+    logsNotifier.value = currentLogs;
+    // filteredLogs.value = currentLogs;
 
     try {
       await MongoService().updateLog(updatedLog);
-
-      currentLogs[index] = updatedLog;
-      logsNotifier.value = currentLogs;
-      filteredLogs.value = currentLogs;
 
       await LogHelper.writeLog(
         "SUCCESS: Sinkronisasi Update '${oldLog.title}' Berhasil",
@@ -92,6 +114,11 @@ class LogController {
     final currentLogs = List<LogModel>.from(logsNotifier.value);
     final targetLog = currentLogs[index];
 
+    await _box.deleteAt(index);
+    currentLogs.removeAt(index);
+    logsNotifier.value = currentLogs;
+    // filteredLogs.value = currentLogs;
+
     try {
       if (targetLog.id == null) {
         throw Exception(
@@ -100,10 +127,6 @@ class LogController {
       }
 
       await MongoService().deleteLog(targetLog.id!);
-
-      currentLogs.removeAt(index);
-      logsNotifier.value = currentLogs;
-      filteredLogs.value = currentLogs;
 
       await LogHelper.writeLog(
         "SUCCESS: Sinkronisasi Hapus '${targetLog.title}' Berhasil",
@@ -135,9 +158,33 @@ class LogController {
     }
   }
 
-  Future<void> loadFromCloud() async {
-    final cloudData = await MongoService().getLogs(username);
-    logsNotifier.value = cloudData;
-    filteredLogs.value = cloudData;
+  void loadOfflineLogs() {
+    final logs = _box.values.toList();
+    logsNotifier.value = logs;
+    // filteredLogs.value = logs;
+  }
+
+  Future<void> loadLogs() async {
+    loadOfflineLogs();
+
+    try {
+      final cloudData = await MongoService().getLogs(username);
+
+      await _box.clear();
+      await _box.addAll(cloudData);
+
+      logsNotifier.value = cloudData;
+      // filteredLogs.value = cloudData;
+
+      await LogHelper.writeLog(
+        'SYNC: Data berhasil diperbarui dari MongoDB',
+        level: 2,
+      );
+    } catch (e) {
+      await LogHelper.writeLog(
+        'OFFLINE: Menggunakan data cache lokal',
+        level: 2,
+      );
+    }
   }
 }

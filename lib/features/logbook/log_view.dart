@@ -26,12 +26,18 @@ class _LogViewState extends State<LogView> {
   @override
   void initState() {
     super.initState();
-    _controller = LogController(username: widget.username);
+    _controller = LogController(
+      username: widget.username,
+      authorId: 'unknown_user',
+      teamId: 'no_team',
+    );
     Future.microtask(() => _initDatabase());
   }
 
   Future<void> _initDatabase() async {
     setState(() => _isLoading = true);
+    _controller.loadOfflineLogs();
+
     try {
       await LogHelper.writeLog(
         'UI: Memulai inisialisasi database...',
@@ -60,7 +66,7 @@ class _LogViewState extends State<LogView> {
         source: 'log_view.dart',
       );
 
-      await _controller.loadFromCloud();
+      await _controller.loadLogs();
 
       await LogHelper.writeLog(
         'UI: Data berhasil dimuat ke Notifier.',
@@ -74,7 +80,13 @@ class _LogViewState extends State<LogView> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Masalah: $e'), backgroundColor: Colors.red),
+          const SnackBar(
+            content: Text(
+              'Sistem berjalan dalam mode offline (Gagal terhubung ke database)',
+            ),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
+          ),
         );
       }
     } finally {
@@ -89,6 +101,7 @@ class _LogViewState extends State<LogView> {
     _titleController.dispose();
     _contentController.dispose();
     _searchController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -448,7 +461,7 @@ class _LogViewState extends State<LogView> {
                   }
 
                   return RefreshIndicator(
-                    onRefresh: () => _controller.loadFromCloud(),
+                    onRefresh: () => _controller.loadLogs(),
                     child: ListView.builder(
                       padding: const EdgeInsets.only(top: 4, bottom: 80),
                       itemCount: currentLogs.length,

@@ -109,7 +109,10 @@ class MongoService {
         throw Exception('ID Log tidak ditemukan untuk update');
       }
 
-      await collection.replaceOne(where.id(log.id!), log.toMap());
+      await collection.replaceOne(
+        where.id(ObjectId.fromHexString(log.id!)),
+        log.toMap(),
+      );
 
       await LogHelper.writeLog(
         "DATABASE: Update '${log.title}' Berhasil",
@@ -126,10 +129,10 @@ class MongoService {
     }
   }
 
-  Future<void> deleteLog(ObjectId id) async {
+  Future<void> deleteLog(String id) async {
     try {
       final collection = await _getSafeCollection();
-      await collection.remove(where.id(id));
+      await collection.remove(where.id(ObjectId.fromHexString(id)));
 
       await LogHelper.writeLog(
         'DATABASE: Hapus ID $id Berhasil',
