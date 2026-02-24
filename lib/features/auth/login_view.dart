@@ -30,10 +30,11 @@ class _LoginViewState extends State<LoginView> {
       final password = _passController.text;
 
       if (_controller.login(username, password)) {
+        final userData = _controller.getUserData(username)!;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => LogView(username: username),
+            builder: (context) => LogView(currentUser: userData),
           ),
         );
       } else {

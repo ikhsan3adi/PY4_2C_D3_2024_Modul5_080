@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:logbook_app_080/features/logbook/models/log_model.dart';
 import 'package:logbook_app_080/helpers/log_helper.dart';
+import 'package:logbook_app_080/services/access_control_service.dart';
 import 'package:logbook_app_080/services/mongo_service.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
@@ -12,6 +13,7 @@ class LogController {
   final String username;
   final String authorId;
   final String teamId;
+  final String userRole;
 
   final _box = Hive.box<LogModel>('offline_logs');
 
@@ -19,6 +21,7 @@ class LogController {
     required this.username,
     required this.authorId,
     required this.teamId,
+    required this.userRole,
   }) {
     logsNotifier.addListener(() => filteredLogs.value = logsNotifier.value);
   }
@@ -77,6 +80,21 @@ class LogController {
     final currentLogs = List<LogModel>.from(logsNotifier.value);
     final oldLog = currentLogs[index];
 
+    // Security check lapis kedua (Controller-level)
+    final bool isOwner = oldLog.authorId == authorId;
+    if (!AccessControlService.canPerform(
+      userRole,
+      AccessControlService.actionUpdate,
+      isOwner: isOwner,
+    )) {
+      await LogHelper.writeLog(
+        'SECURITY: Unauthorized update attempt by $authorId',
+        source: 'log_controller.dart',
+        level: 1,
+      );
+      return;
+    }
+
     final updatedLog = LogModel(
       id: oldLog.id,
       username: username,
@@ -113,6 +131,21 @@ class LogController {
   Future<void> removeLog(int index) async {
     final currentLogs = List<LogModel>.from(logsNotifier.value);
     final targetLog = currentLogs[index];
+
+    // Controller-level Security check
+    final bool isOwner = targetLog.authorId == authorId;
+    if (!AccessControlService.canPerform(
+      userRole,
+      AccessControlService.actionDelete,
+      isOwner: isOwner,
+    )) {
+      await LogHelper.writeLog(
+        'SECURITY: Unauthorized delete attempt by $authorId',
+        source: 'log_controller.dart',
+        level: 1,
+      );
+      return;
+    }
 
     await _box.deleteAt(index);
     currentLogs.removeAt(index);
@@ -168,7 +201,7 @@ class LogController {
     loadOfflineLogs();
 
     try {
-      final cloudData = await MongoService().getLogs(username);
+      final cloudData = await MongoService().getLogs(teamId);
 
       await _box.clear();
       await _box.addAll(cloudData);

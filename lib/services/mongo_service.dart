@@ -58,7 +58,7 @@ class MongoService {
     }
   }
 
-  Future<List<LogModel>> getLogs(String username) async {
+  Future<List<LogModel>> getLogs(String teamId) async {
     try {
       final collection = await _getSafeCollection();
 
@@ -69,7 +69,7 @@ class MongoService {
       );
 
       final List<Map<String, dynamic>> data = await collection
-          .find(where.eq('username', username))
+          .find(where.eq('teamId', teamId))
           .toList();
       return data.map((json) => LogModel.fromMap(json)).toList();
     } catch (e) {

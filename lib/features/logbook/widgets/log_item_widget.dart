@@ -7,6 +7,8 @@ class LogItemWidget extends StatelessWidget {
   const LogItemWidget({
     super.key,
     required this.log,
+    this.canEdit = true,
+    this.canDelete = true,
     this.swipeToLeftAction,
     this.swipeToRightAction,
     this.afterSwipeToLeft,
@@ -16,6 +18,8 @@ class LogItemWidget extends StatelessWidget {
   });
 
   final LogModel log;
+  final bool canEdit;
+  final bool canDelete;
   final Future<bool?> Function()? swipeToLeftAction;
   final Future<bool?> Function()? swipeToRightAction;
   final Function? afterSwipeToLeft;
@@ -33,8 +37,21 @@ class LogItemWidget extends StatelessWidget {
     final accentColor =
         AppConstants.categoryAccentColors[log.category] ?? Colors.black;
 
+    // Tentukan arah swipe berdasar izin RBAC
+    final DismissDirection dismissDirection;
+    if (canEdit && canDelete) {
+      dismissDirection = DismissDirection.horizontal;
+    } else if (canDelete) {
+      dismissDirection = DismissDirection.endToStart;
+    } else if (canEdit) {
+      dismissDirection = DismissDirection.startToEnd;
+    } else {
+      dismissDirection = DismissDirection.none;
+    }
+
     return Dismissible(
       key: Key(log.id ?? log.timestamp),
+      direction: dismissDirection,
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.endToStart) {
           return await swipeToLeftAction?.call();
@@ -117,33 +134,37 @@ class LogItemWidget extends StatelessWidget {
             ],
           ),
           isThreeLine: true,
-          trailing: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 24,
-                width: 24,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  iconSize: 20,
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () => editAction?.call(log),
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 24,
-                width: 24,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  iconSize: 20,
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => deleteAction?.call(log),
-                ),
-              ),
-            ],
-          ),
+          trailing: (canEdit || canDelete)
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (canEdit)
+                      SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          iconSize: 20,
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () => editAction?.call(log),
+                        ),
+                      ),
+                    if (canEdit && canDelete) const SizedBox(height: 8),
+                    if (canDelete)
+                      SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          iconSize: 20,
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => deleteAction?.call(log),
+                        ),
+                      ),
+                  ],
+                )
+              : null,
         ),
       ),
     );
