@@ -80,7 +80,6 @@ class LogController {
     final currentLogs = List<LogModel>.from(logsNotifier.value);
     final oldLog = currentLogs[index];
 
-    // Security check lapis kedua (Controller-level)
     final bool isOwner = oldLog.authorId == authorId;
     if (!AccessControlService.canPerform(
       userRole,
@@ -132,7 +131,6 @@ class LogController {
     final currentLogs = List<LogModel>.from(logsNotifier.value);
     final targetLog = currentLogs[index];
 
-    // Controller-level Security check
     final bool isOwner = targetLog.authorId == authorId;
     if (!AccessControlService.canPerform(
       userRole,

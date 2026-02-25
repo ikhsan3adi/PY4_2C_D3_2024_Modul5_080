@@ -70,7 +70,7 @@ class _LogEditorPageState extends State<LogEditorPage> {
       );
     }
 
-    if (mounted) Navigator.pop(context);
+    if (mounted) Navigator.pop(context, true);
   }
 
   @override

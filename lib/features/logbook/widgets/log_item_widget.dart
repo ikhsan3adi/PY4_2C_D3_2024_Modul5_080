@@ -9,6 +9,7 @@ class LogItemWidget extends StatelessWidget {
     required this.log,
     this.canEdit = true,
     this.canDelete = true,
+    this.onTapAction,
     this.swipeToLeftAction,
     this.swipeToRightAction,
     this.afterSwipeToLeft,
@@ -20,6 +21,7 @@ class LogItemWidget extends StatelessWidget {
   final LogModel log;
   final bool canEdit;
   final bool canDelete;
+  final VoidCallback? onTapAction;
   final Future<bool?> Function()? swipeToLeftAction;
   final Future<bool?> Function()? swipeToRightAction;
   final Function? afterSwipeToLeft;
@@ -37,7 +39,6 @@ class LogItemWidget extends StatelessWidget {
     final accentColor =
         AppConstants.categoryAccentColors[log.category] ?? Colors.black;
 
-    // Tentukan arah swipe berdasar izin RBAC
     final DismissDirection dismissDirection;
     if (canEdit && canDelete) {
       dismissDirection = DismissDirection.horizontal;
@@ -90,81 +91,104 @@ class LogItemWidget extends StatelessWidget {
       child: Card(
         color: cardColor,
         margin: const EdgeInsets.symmetric(vertical: 4),
+        elevation: 1.5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         clipBehavior: Clip.hardEdge,
-        child: ListTile(
-          leading: Icon(categoryIcon, color: accentColor),
-          title: Text(
-            log.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(log.description),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Chip(
-                    backgroundColor: Colors.white.withValues(alpha: 0.5),
-                    avatar: Icon(categoryIcon, size: 14, color: accentColor),
-                    label: Text(
-                      log.category,
+        child: InkWell(
+          onTap: onTapAction,
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            leading: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [Icon(categoryIcon, color: accentColor, size: 28)],
+            ),
+            title: Text(
+              log.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  log.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Chip(
+                      backgroundColor: Colors.white.withValues(alpha: 0.5),
+                      // avatar: Icon(categoryIcon, size: 14, color: accentColor),
+                      label: Text(
+                        log.category,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: accentColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                    ),
+                    Spacer(),
+                    Icon(
+                      Icons.cloud_done,
+                      size: 14,
+                      color: Colors.green.shade700,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      DateHelper.formatTimestamp(log.timestamp),
                       style: TextStyle(
                         fontSize: 11,
-                        color: accentColor,
-                        fontWeight: FontWeight.bold,
+                        color: theme.disabledColor,
                       ),
                     ),
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.cloud_done,
-                    size: 14,
-                    color: Colors.green.shade700,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    DateHelper.formatTimestamp(log.timestamp),
-                    style: TextStyle(fontSize: 11, color: theme.disabledColor),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          isThreeLine: true,
-          trailing: (canEdit || canDelete)
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (canEdit)
-                      SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          iconSize: 20,
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () => editAction?.call(log),
-                        ),
-                      ),
-                    if (canEdit && canDelete) const SizedBox(height: 8),
-                    if (canDelete)
-                      SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          iconSize: 20,
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => deleteAction?.call(log),
-                        ),
-                      ),
                   ],
-                )
-              : null,
+                ),
+              ],
+            ),
+            isThreeLine: true,
+            trailing: (canEdit || canDelete)
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (canEdit)
+                        SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            iconSize: 20,
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () => editAction?.call(log),
+                          ),
+                        ),
+                      if (canEdit && canDelete) const SizedBox(height: 8),
+                      if (canDelete)
+                        SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            iconSize: 20,
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => deleteAction?.call(log),
+                          ),
+                        ),
+                    ],
+                  )
+                : null,
+          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logbook_app_080/features/logbook/log_controller.dart';
+import 'package:logbook_app_080/features/logbook/log_detail_view.dart';
 import 'package:logbook_app_080/features/logbook/log_editor_page.dart';
 import 'package:logbook_app_080/features/logbook/models/log_model.dart';
 import 'package:logbook_app_080/features/logbook/widgets/log_item_widget.dart';
@@ -89,7 +90,6 @@ class _LogViewState extends State<LogView> {
     super.dispose();
   }
 
-  // Navigasi ke Halaman Editor (menggantikan Dialog)
   void _goToEditor({LogModel? log, int? index}) {
     Navigator.push(
       context,
@@ -141,7 +141,6 @@ class _LogViewState extends State<LogView> {
         title: Text('Logbook: $_username'),
         centerTitle: true,
         actions: [
-          // Badge peran user
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Chip(
@@ -285,7 +284,6 @@ class _LogViewState extends State<LogView> {
                       itemBuilder: (context, index) {
                         final log = currentLogs[index];
 
-                        // Cek kepemilikan data untuk Gatekeeper
                         final bool isOwner = log.authorId == _authorId;
 
                         final bool canEdit = AccessControlService.canPerform(
@@ -303,6 +301,34 @@ class _LogViewState extends State<LogView> {
                           log: log,
                           canEdit: canEdit,
                           canDelete: canDelete,
+                          onTapAction: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LogDetailView(
+                                  log: log,
+                                  canEdit: canEdit,
+                                  onEditPressed: () async {
+                                    final isSaved = await Navigator.push<bool>(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => LogEditorPage(
+                                          log: log,
+                                          index: index,
+                                          controller: _controller,
+                                          currentUser: widget.currentUser,
+                                        ),
+                                      ),
+                                    );
+
+                                    if (isSaved == true && context.mounted) {
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                ),
+                              ),
+                            );
+                          },
                           editAction: (log) =>
                               _goToEditor(log: log, index: index),
                           deleteAction: (_) => _showDeleteConfirmation(index),
