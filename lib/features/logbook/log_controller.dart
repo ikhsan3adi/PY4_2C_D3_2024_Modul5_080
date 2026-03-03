@@ -23,7 +23,7 @@ class LogController {
     required this.teamId,
     required this.userRole,
   }) {
-    logsNotifier.addListener(() => filteredLogs.value = logsNotifier.value);
+    logsNotifier.addListener(() => filteredLogs.value = getVisibleLogs());
   }
 
   void dispose() {
@@ -33,12 +33,23 @@ class LogController {
 
   List<LogModel> get logs => logsNotifier.value;
 
+  List<LogModel> getVisibleLogs() {
+    return logsNotifier.value.where((log) {
+      final bool isOwner = log.authorId == authorId;
+      return AccessControlService.canView(
+        isOwner: isOwner,
+        isPublic: log.isPublic,
+      );
+    }).toList();
+  }
+
   Future<void> addLog(
     String title,
     String desc, {
     String category = 'Pribadi',
     String? authorId,
     String? teamId,
+    bool isPublic = false,
   }) async {
     final newLog = LogModel(
       id: ObjectId().oid,
@@ -49,6 +60,7 @@ class LogController {
       category: category,
       authorId: authorId ?? this.authorId,
       teamId: teamId ?? this.teamId,
+      isPublic: isPublic,
     );
 
     await _box.add(newLog);
@@ -76,6 +88,7 @@ class LogController {
     String title,
     String desc, {
     String category = 'Pribadi',
+    bool isPublic = false,
   }) async {
     final currentLogs = List<LogModel>.from(logsNotifier.value);
     final oldLog = currentLogs[index];
@@ -103,6 +116,7 @@ class LogController {
       category: category,
       authorId: authorId,
       teamId: teamId,
+      isPublic: isPublic,
     );
 
     await _box.putAt(index, updatedLog);
@@ -175,9 +189,9 @@ class LogController {
 
   void searchLog(String query) {
     if (query.isEmpty) {
-      filteredLogs.value = logsNotifier.value;
+      filteredLogs.value = getVisibleLogs();
     } else {
-      filteredLogs.value = logsNotifier.value.where((log) {
+      filteredLogs.value = getVisibleLogs().where((log) {
         bool searchTitle = log.title.toLowerCase().contains(
           query.toLowerCase(),
         );

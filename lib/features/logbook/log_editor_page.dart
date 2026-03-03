@@ -27,6 +27,7 @@ class _LogEditorPageState extends State<LogEditorPage> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late String _selectedCategory;
+  late bool _isPublic;
 
   bool get _isEditing => widget.log != null;
 
@@ -38,6 +39,7 @@ class _LogEditorPageState extends State<LogEditorPage> {
       text: widget.log?.description ?? '',
     );
     _selectedCategory = widget.log?.category ?? AppConstants.categories.first;
+    _isPublic = widget.log?.isPublic ?? false;
 
     _descController.addListener(() => setState(() {}));
   }
@@ -59,6 +61,7 @@ class _LogEditorPageState extends State<LogEditorPage> {
         _titleController.text,
         _descController.text,
         category: _selectedCategory,
+        isPublic: _isPublic,
       );
     } else {
       await widget.controller.addLog(
@@ -67,6 +70,7 @@ class _LogEditorPageState extends State<LogEditorPage> {
         category: _selectedCategory,
         authorId: widget.currentUser['authorId'],
         teamId: widget.currentUser['teamId'],
+        isPublic: _isPublic,
       );
     }
 
@@ -109,6 +113,10 @@ class _LogEditorPageState extends State<LogEditorPage> {
               selectedCategory: _selectedCategory,
               onCategoryChanged: (value) {
                 setState(() => _selectedCategory = value);
+              },
+              isPublic: _isPublic,
+              onPublicChanged: (value) {
+                setState(() => _isPublic = value);
               },
             ),
             PreviewTab(markdownText: _descController.text),

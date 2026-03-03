@@ -6,6 +6,8 @@ class EditorTab extends StatelessWidget {
   final TextEditingController descController;
   final String selectedCategory;
   final ValueChanged<String> onCategoryChanged;
+  final bool isPublic;
+  final ValueChanged<bool> onPublicChanged;
 
   const EditorTab({
     super.key,
@@ -13,6 +15,8 @@ class EditorTab extends StatelessWidget {
     required this.descController,
     required this.selectedCategory,
     required this.onCategoryChanged,
+    required this.isPublic,
+    required this.onPublicChanged,
   });
 
   @override
@@ -64,6 +68,22 @@ class EditorTab extends StatelessWidget {
             onChanged: (value) {
               if (value != null) onCategoryChanged(value);
             },
+          ),
+          const SizedBox(height: 12),
+          SwitchListTile(
+            title: const Text('Visibilitas'),
+            subtitle: Text(
+              isPublic
+                  ? 'Publik (Terlihat oleh tim)'
+                  : 'Privat (Hanya pemilik)',
+            ),
+            secondary: Icon(
+              isPublic ? Icons.public : Icons.lock,
+              color: isPublic ? Colors.green : Colors.grey,
+            ),
+            value: isPublic,
+            onChanged: onPublicChanged,
+            contentPadding: EdgeInsets.zero,
           ),
           const SizedBox(height: 12),
           Expanded(

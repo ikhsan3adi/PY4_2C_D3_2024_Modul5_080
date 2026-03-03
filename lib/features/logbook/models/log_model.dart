@@ -21,6 +21,8 @@ class LogModel {
   final String authorId;
   @HiveField(7)
   final String teamId;
+  @HiveField(8)
+  final bool isPublic;
 
   LogModel({
     this.id,
@@ -31,6 +33,7 @@ class LogModel {
     this.category = 'Pribadi',
     required this.authorId,
     required this.teamId,
+    this.isPublic = false,
   });
 
   factory LogModel.fromMap(Map<String, dynamic> map) {
@@ -43,6 +46,7 @@ class LogModel {
       category: map['category'] ?? 'Pribadi',
       authorId: map['authorId'] ?? 'unknown_user',
       teamId: map['teamId'] ?? 'no_team',
+      isPublic: map['isPublic'] ?? false,
     );
   }
 
@@ -56,6 +60,7 @@ class LogModel {
       'category': category,
       'authorId': authorId,
       'teamId': teamId,
+      'isPublic': isPublic,
     };
   }
 }

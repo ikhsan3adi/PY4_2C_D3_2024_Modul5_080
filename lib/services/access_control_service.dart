@@ -17,13 +17,17 @@ class AccessControlService {
 
   static bool canPerform(String role, String action, {bool isOwner = false}) {
     final permissions = _rolePermissions[role] ?? [];
-    bool hasBasicPermission = permissions.contains(action);
 
-    if (role == 'Anggota' &&
-        (action == actionUpdate || action == actionDelete)) {
+    // Sovereignty Rule: Aksi update/delete hanya boleh dilakukan oleh pemilik
+    if (action == actionUpdate || action == actionDelete) {
       return isOwner;
     }
 
-    return hasBasicPermission;
+    return permissions.contains(action);
+  }
+
+  // Visibility Rule: Catatan private hanya bisa dilihat oleh pemiliknya
+  static bool canView({required bool isOwner, required bool isPublic}) {
+    return isOwner || isPublic;
   }
 }
