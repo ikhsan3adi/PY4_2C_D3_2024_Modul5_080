@@ -9,6 +9,7 @@ import 'package:logbook_app_080/helpers/log_helper.dart';
 import 'package:logbook_app_080/services/access_control_service.dart';
 import 'package:logbook_app_080/services/connectivity_service.dart';
 import 'package:logbook_app_080/services/mongo_service.dart';
+import 'package:lottie/lottie.dart';
 
 class LogView extends StatefulWidget {
   final Map<String, String> currentUser;
@@ -290,16 +291,15 @@ class _LogViewState extends State<LogView> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.note_alt_outlined,
-                            size: 100,
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.3,
-                            ),
+                          Lottie.asset(
+                            'assets/lottie/empty_state.json',
+                            width: 150,
+                            height: 150,
+                            fit: BoxFit.contain,
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Belum ada catatan.',
+                            'Belum ada aktivitas hari ini?',
                             style: theme.textTheme.headlineSmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.bold,
