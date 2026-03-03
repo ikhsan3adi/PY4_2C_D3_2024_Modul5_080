@@ -102,6 +102,34 @@ class MongoService {
     }
   }
 
+  Future<void> upsertLog(LogModel log) async {
+    try {
+      final collection = await _getSafeCollection();
+      if (log.id == null) {
+        await collection.insertOne(log.toMap());
+      } else {
+        await collection.replaceOne(
+          where.id(ObjectId.fromHexString(log.id!)),
+          log.toMap(),
+          upsert: true,
+        );
+      }
+
+      await LogHelper.writeLog(
+        "SYNC: Upsert '${log.title}' berhasil",
+        source: _source,
+        level: 2,
+      );
+    } catch (e) {
+      await LogHelper.writeLog(
+        'ERROR: Upsert Failed - $e',
+        source: _source,
+        level: 1,
+      );
+      rethrow;
+    }
+  }
+
   Future<void> updateLog(LogModel log) async {
     try {
       final collection = await _getSafeCollection();

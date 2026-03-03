@@ -50,9 +50,12 @@ app.*.map.json
 .agent
 
 *_Modul*_080.txt
+*_Modul*_080.md
 
 .apk-release
 
 .env
 
 *.g.dart
+
+/tool

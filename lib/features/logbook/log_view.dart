@@ -7,6 +7,7 @@ import 'package:logbook_app_080/features/logbook/widgets/log_item_widget.dart';
 import 'package:logbook_app_080/features/onboarding/onboarding_view.dart';
 import 'package:logbook_app_080/helpers/log_helper.dart';
 import 'package:logbook_app_080/services/access_control_service.dart';
+import 'package:logbook_app_080/services/connectivity_service.dart';
 import 'package:logbook_app_080/services/mongo_service.dart';
 
 class LogView extends StatefulWidget {
@@ -19,6 +20,7 @@ class LogView extends StatefulWidget {
 
 class _LogViewState extends State<LogView> {
   late final LogController _controller;
+  late final ConnectivityService _connectivityService;
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
 
@@ -35,6 +37,25 @@ class _LogViewState extends State<LogView> {
       teamId: widget.currentUser['teamId'] ?? 'no_team',
       userRole: _role,
     );
+
+    _connectivityService = ConnectivityService(
+      onReconnected: () async {
+        if (mounted) {
+          await _controller.loadLogs();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Koneksi pulih. Data berhasil disinkronkan.'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+        }
+      },
+    );
+    _connectivityService.initialize();
+
     Future.microtask(() => _initDatabase());
   }
 
@@ -86,6 +107,7 @@ class _LogViewState extends State<LogView> {
   @override
   void dispose() {
     _searchController.dispose();
+    _connectivityService.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -141,6 +163,23 @@ class _LogViewState extends State<LogView> {
         title: Text('Logbook: $_username'),
         centerTitle: true,
         actions: [
+          // Indikator status koneksi (Connectivity Awareness)
+          ValueListenableBuilder<bool>(
+            valueListenable: _connectivityService.isOnline,
+            builder: (context, online, _) {
+              return Tooltip(
+                message: online ? 'Tersinkron ke Cloud' : 'Mode Offline',
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Icon(
+                    online ? Icons.cloud_done : Icons.cloud_off,
+                    color: online ? Colors.green : Colors.orange,
+                    size: 22,
+                  ),
+                ),
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Chip(
