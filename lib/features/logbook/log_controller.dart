@@ -83,15 +83,23 @@ class LogController {
     }
   }
 
-  Future<void> updateLog(
-    int index,
-    String title,
-    String desc, {
-    String category = 'Pribadi',
-    bool isPublic = false,
+  Future<void> updateLog({
+    required LogModel targetLog,
+    required String title,
+    required String desc,
+    required String category,
+    required bool isPublic,
   }) async {
+    final realIndex = logsNotifier.value.indexWhere(
+      (log) =>
+          log.timestamp == targetLog.timestamp &&
+          log.authorId == targetLog.authorId &&
+          log.title == targetLog.title,
+    );
+    if (realIndex == -1) return;
+
     final currentLogs = List<LogModel>.from(logsNotifier.value);
-    final oldLog = currentLogs[index];
+    final oldLog = currentLogs[realIndex];
 
     final bool isOwner = oldLog.authorId == authorId;
     if (!AccessControlService.canPerform(
@@ -119,8 +127,8 @@ class LogController {
       isPublic: isPublic,
     );
 
-    await _box.putAt(index, updatedLog);
-    currentLogs[index] = updatedLog;
+    await _box.putAt(realIndex, updatedLog);
+    currentLogs[realIndex] = updatedLog;
     logsNotifier.value = currentLogs;
     // filteredLogs.value = currentLogs;
 
@@ -141,9 +149,16 @@ class LogController {
     }
   }
 
-  Future<void> removeLog(int index) async {
+  Future<void> removeLog(LogModel targetLog) async {
+    final realIndex = logsNotifier.value.indexWhere(
+      (log) =>
+          log.timestamp == targetLog.timestamp &&
+          log.authorId == targetLog.authorId &&
+          log.title == targetLog.title,
+    );
+    if (realIndex == -1) return;
+
     final currentLogs = List<LogModel>.from(logsNotifier.value);
-    final targetLog = currentLogs[index];
 
     final bool isOwner = targetLog.authorId == authorId;
     if (!AccessControlService.canPerform(
@@ -159,8 +174,8 @@ class LogController {
       return;
     }
 
-    await _box.deleteAt(index);
-    currentLogs.removeAt(index);
+    await _box.deleteAt(realIndex);
+    currentLogs.removeAt(realIndex);
     logsNotifier.value = currentLogs;
     // filteredLogs.value = currentLogs;
 
@@ -213,7 +228,7 @@ class LogController {
     loadOfflineLogs();
 
     try {
-      final cloudData = await MongoService().getLogs(teamId);
+      final cloudData = await MongoService().getLogs(teamId, authorId);
 
       await _box.clear();
       await _box.addAll(cloudData);

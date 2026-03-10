@@ -57,9 +57,9 @@ class _LogEditorPageState extends State<LogEditorPage> {
 
     if (_isEditing) {
       await widget.controller.updateLog(
-        widget.index!,
-        _titleController.text,
-        _descController.text,
+        targetLog: widget.log!,
+        title: _titleController.text,
+        desc: _descController.text,
         category: _selectedCategory,
         isPublic: _isPublic,
       );

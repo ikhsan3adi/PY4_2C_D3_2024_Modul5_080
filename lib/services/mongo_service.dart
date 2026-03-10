@@ -58,7 +58,7 @@ class MongoService {
     }
   }
 
-  Future<List<LogModel>> getLogs(String teamId) async {
+  Future<List<LogModel>> getLogs(String teamId, String authorId) async {
     try {
       final collection = await _getSafeCollection();
 
@@ -68,8 +68,12 @@ class MongoService {
         level: 3,
       );
 
+      final query = where
+          .eq('teamId', teamId)
+          .and(where.eq('authorId', authorId).or(where.eq('isPublic', true)));
+
       final List<Map<String, dynamic>> data = await collection
-          .find(where.eq('teamId', teamId))
+          .find(query)
           .toList();
       return data.map((json) => LogModel.fromMap(json)).toList();
     } catch (e) {

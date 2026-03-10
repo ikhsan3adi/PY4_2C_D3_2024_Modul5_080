@@ -127,7 +127,7 @@ class _LogViewState extends State<LogView> {
     );
   }
 
-  void _showDeleteConfirmation(int index) {
+  void _showDeleteConfirmation(LogModel targetLog) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -141,7 +141,7 @@ class _LogViewState extends State<LogView> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              await _controller.removeLog(index);
+              await _controller.removeLog(targetLog);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Catatan dihapus')),
@@ -370,9 +370,9 @@ class _LogViewState extends State<LogView> {
                           },
                           editAction: (log) =>
                               _goToEditor(log: log, index: index),
-                          deleteAction: (_) => _showDeleteConfirmation(index),
+                          deleteAction: (_) => _showDeleteConfirmation(log),
                           swipeToLeftAction: () async {
-                            _showDeleteConfirmation(index);
+                            _showDeleteConfirmation(log);
                             return null;
                           },
                           swipeToRightAction: () async {
