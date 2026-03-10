@@ -1,4 +1,4 @@
-# Logbook App - Modul 4
+# Logbook App - Modul 5
 
 Aplikasi Logbook Digital dengan fitur CRUD berbasis cloud database (MongoDB), dikembangkan menggunakan Flutter dengan penerapan prinsip SOLID, Singleton Pattern, dan Asynchronous Programming.
 
@@ -11,30 +11,34 @@ Aplikasi Logbook Digital dengan fitur CRUD berbasis cloud database (MongoDB), di
 - **Timestamp Formatting**: Format waktu relatif ("2 menit yang lalu", "3 jam yang lalu", "25 Jan 2026") menggunakan logika waktu lokal Indonesia.
 - **Search**: Pencarian catatan secara real-time berdasarkan judul dan deskripsi.
 - **Kategori**: Sistem kategori (Pribadi, Pekerjaan, Urgent) dengan warna dan ikon yang berbeda, terpusat di `AppConstants`.
-- **[NEW] Cloud CRUD**: Pencatatan aktivitas dengan fitur Tambah, Edit, dan Hapus yang tersinkronisasi langsung ke database MongoDB.
-- **[NEW] Connection Guard**: Pesan error melalui SnackBar jika koneksi ke database gagal saat aplikasi dimulai.
-- **[NEW] Secure Credentials**: Penyimpanan kredensial database di file `.env` yang terlindungi oleh `.gitignore`.
-- **[NEW] Pull-to-Refresh**: Widget `RefreshIndicator` untuk memperbarui data dari database secara manual.
-- **[NEW] Cloud Sync Indicator**: Ikon cloud pada setiap item yang menunjukkan data tersinkronisasi dengan server.
-- **[NEW] Per-User Log Filtering**: Setiap log ditandai dengan `username` pemiliknya. Saat fetch, hanya data milik user yang sedang login yang ditampilkan.
-- **[NEW] Audit Logging**: Sistem `LogHelper` dengan level verbosity (`LOG_LEVEL`) dan source filtering (`LOG_MUTE`) yang dikonfigurasi melalui `.env`. Log juga ditulis ke file harian `dd-MM-yyyy.log`.
+- **Cloud CRUD**: Pencatatan aktivitas dengan fitur Tambah, Edit, dan Hapus yang tersinkronisasi langsung ke database MongoDB.
+- **Connection Guard**: Pesan error melalui SnackBar jika koneksi ke database gagal saat aplikasi dimulai.
+- **Secure Credentials**: Penyimpanan kredensial database di file `.env` yang terlindungi oleh `.gitignore`.
+- **Pull-to-Refresh**: Widget `RefreshIndicator` untuk memperbarui data dari database secara manual.
+- **Cloud Sync Indicator**: Ikon cloud pada setiap item yang menunjukkan data tersinkronisasi dengan server.
+- **Per-User Log Filtering**: Setiap log ditandai dengan `username` pemiliknya. Saat fetch, hanya data milik user yang sedang login yang ditampilkan.
+- **Audit Logging**: Sistem `LogHelper` dengan level verbosity (`LOG_LEVEL`) dan source filtering (`LOG_MUTE`) yang dikonfigurasi melalui `.env`. Log juga ditulis ke file harian `dd-MM-yyyy.log`.
+- **[NEW] Offline-First (Hive)**: Penyimpanan data biner secara lokal agar log tetap tersedia instan tanpa koneksi internet.
+- **[NEW] Hybrid Sync Manager**: Sinkronisasi cerdas antara database lokal dan MongoDB Atlas secara *background*.
+- **[NEW] RBAC Gatekeeper**: Validasi keamanan level UI dan Controller berdasarkan *role* (Ketua/Anggota) dan *ownership* (pemilik data).
+- **[NEW] Collaborative Team Isolation**: Pemisahan data *(multi-tenancy)* menggunakan filter `teamId` agar kelompok mahasiswa dapat bekerja secara kolaboratif.
+- **[NEW] Markdown Editor**: Pengolahan dan formatting dokumen laporan kaya (*rich-text*) dengan tab khusus Editor & Preview menggunakan `flutter_markdown`.
+- **[NEW] Data Sovereignty & Privacy Badge**: Sistem catatan privat *(Private)* dan publik *(Public)* yang membatasi hak akses kerahasiaan antar rekan satu tim secara absolut di level Cloud Database.
+- **[NEW] Connectivity Awareness**: Menampilkan *dashboard header* indikator status sinyal (Offline/Online) *real-time* berbasis paket `connectivity_plus`.
 
 ## Screenshots
 
-### Modul 4
-
-|                           Loading State                           |                          Log Kosong                           |                         List Log                          |
-| :---------------------------------------------------------------: | :-----------------------------------------------------------: | :-------------------------------------------------------: |
-| ![Loading State](.screenshots/modul-4/screenshot_loading_log.jpg) | ![Log Kosong](.screenshots/modul-4/screenshot_log_kosong.jpg) | ![List Log](.screenshots/modul-4/screenshot_list_log.jpg) |
-|                        **Log Kosong (2)**                         |                        **Search Log**                         |                                                           |
-| ![Log Kosong 2](.screenshots/modul-4/screenshot_log_kosong_2.jpg) | ![Search Log](.screenshots/modul-4/screenshot_search_log.jpg) |                                                           |
+|                            Offline List (Hive)                            |                         Back to Online                          |                         Form Editor (Markdown)                          |
+| :-----------------------------------------------------------------------: | :-------------------------------------------------------------: | :---------------------------------------------------------------------: |
+|       ![Offline List](.screenshots/modul-5/screenshot-offline.jpg)        |  ![Back to Online](.screenshots/modul-5/screenshot-online.jpg)  | ![Markdown Editor](.screenshots/modul-5/screenshot-markdown-editor.jpg) |
+|                           **Markdown Preview**                            |                         **Empty State**                         |                                                                         |
+| ![Markdown Preview](.screenshots/modul-5/screenshot-markdown-preview.jpg) | ![Empty State](.screenshots/modul-5/screenshot-empty-state.jpg) |                                                                         |
 
 ## Lesson Learned (Refleksi Akhir)
 
 1. **Konsep Baru**:
-   - Memahami cara kerja Singleton Pattern dalam konteks koneksi database: hanya ada satu instance `MongoService` yang aktif sepanjang lifecycle aplikasi, sehingga koneksi tidak dibuka berulang kali. Selain itu, baru memahami bahwa `ObjectId` di MongoDB berbeda dengan auto-increment di SQL, nilainya dibuat di sisi klien sebelum data dikirim ke server, bukan oleh server itu sendiri.
+   - Mempelajari implementasi arsitektur *Offline-First* pada aplikasi Flutter menggunakan basis data lokal Hive yang disinkronisasikan ke MongoDB Atlas. Penggunaan model data biner dan *Adapter Generator* dari Hive memungkinkan proses baca-tulis data terjadi secara instan di memori perangkat, sehingga antarmuka pengguna (UI) tetap responsif dan tidak bergantung pada latensi jaringan server.
 2. **Kemenangan Kecil**:
-   - Berhasil menghubungkan aplikasi Flutter ke MongoDB lokal yang berjalan di Docker, kemudian mengekspos port-nya ke internet menggunakan ngrok sebagai pengganti MongoDB Atlas. Pendekatan ini berguna untuk pengujian tanpa biaya dan tanpa ketergantungan pada layanan cloud pihak ketiga.
-   - Prinsip Separation of Concerns terbukti efektif: perpindahan dari penyimpanan lokal (SharedPreferences) ke database remote hanya membutuhkan perubahan di lapisan Service dan Controller, sedangkan View hampir tidak berubah.
+   - Berhasil mengimplementasikan sistem *Security Gatekeeper* dan kontrol *Data Privacy* (*Private/Public Notes*) yang mencegah kebocoran data antar anggota tim. Kesulitan dalam menyaring data berhasil diatasi dengan menerapkan *filter* langsung pada *query* koleksi MongoDB (*server-side filtering*). Selain itu, *bug* asinkron terkait ketidaksesuaian *index* saat menghapus data dengan filter pencarian aktif telah diselesaikan dengan memvalidasi ulang posisi data menggunakan kombinasi tiga parameter (*Timestamp, AuthorId, Title*) pada metode `.indexWhere()`.
 3. **Target Berikutnya**:
-   - Ingin mengimplementasikan fitur *offline-first*, yaitu data tetap bisa ditambah dan dilihat meskipun tidak ada koneksi internet, kemudian disinkronkan ke server saat koneksi kembali tersedia.
+   - Menghilangkan *hardcode* pada data pengguna dengan membuat *collection* khusus "users" di MongoDB. Selanjutnya, saya berencana untuk membangun fitur *Registration* serta antarmuka Manajemen Tim untuk mempermudah alokasi kolaborasi proyek.
