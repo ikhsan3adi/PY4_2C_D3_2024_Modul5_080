@@ -59,6 +59,7 @@ dev_dependencies:
   hive_generator: ^2.0.1
   rename_app: ^1.6.5
   mocktail: ^1.0.4
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -105,3 +106,29 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  image_path: "assets/icons/AppIcon~ios-marketing.png"
+
+  android: true
+  image_path_android: "assets/icons/ic_launcher.png"
+  adaptive_icon_foreground: "assets/icons/ic_launcher_foreground.png"
+  adaptive_icon_background: "assets/icons/ic_launcher_background.png"
+  min_sdk_android: 21
+
+  ios: true
+  remove_alpha_ios: true
+  image_path_ios: "assets/icons/AppIcon~ios-marketing.png"
+
+  web:
+    generate: true
+    image_path: "assets/icons/icon-512-maskable.png"
+    background_color: "#3F51B5"
+    theme_color: "#3F51B5"
+  windows:
+    generate: true
+    image_path: "assets/icons/icon-512-maskable.png"
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: "assets/icons/icon-512-maskable.png"
