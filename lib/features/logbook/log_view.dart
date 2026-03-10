@@ -161,46 +161,12 @@ class _LogViewState extends State<LogView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Logbook: $_username'),
-        centerTitle: true,
+        title: const Text('Logbook Proyek'),
+        centerTitle: false,
         actions: [
-          // Indikator status koneksi (Connectivity Awareness)
-          ValueListenableBuilder<bool>(
-            valueListenable: _connectivityService.isOnline,
-            builder: (context, online, _) {
-              return Tooltip(
-                message: online ? 'Tersinkron ke Cloud' : 'Mode Offline',
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Icon(
-                    online ? Icons.cloud_done : Icons.cloud_off,
-                    color: online ? Colors.green : Colors.orange,
-                    size: 22,
-                  ),
-                ),
-              );
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Chip(
-              label: Text(
-                _role,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: _role == 'Ketua' ? Colors.white : null,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              backgroundColor: _role == 'Ketua'
-                  ? Colors.indigo
-                  : Colors.grey.shade200,
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-            ),
-          ),
           IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Keluar',
             onPressed: () {
               showDialog(
                 context: context,
@@ -236,7 +202,95 @@ class _LogViewState extends State<LogView> {
         ],
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Halo, $_username 👋',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Chip(
+                          label: Text(
+                            _role,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: _role == 'Ketua'
+                                  ? Colors.white
+                                  : theme.colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          backgroundColor: _role == 'Ketua'
+                              ? Colors.indigo
+                              : Colors.grey.shade200,
+                          visualDensity: VisualDensity.compact,
+                          padding: EdgeInsets.zero,
+                        ),
+                        const SizedBox(width: 12),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: _connectivityService.isOnline,
+                          builder: (context, online, _) {
+                            return Tooltip(
+                              message: online
+                                  ? 'Tersinkron ke Cloud'
+                                  : 'Mode Offline',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    online ? Icons.cloud_done : Icons.cloud_off,
+                                    color: online
+                                        ? Colors.green
+                                        : Colors.orange,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    online ? 'Online' : 'Offline',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: online
+                                          ? Colors.green
+                                          : Colors.orange,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                CircleAvatar(
+                  radius: 26,
+                  backgroundColor: theme.colorScheme.primaryContainer,
+                  child: Text(
+                    _username.isNotEmpty
+                        ? _username.substring(0, 2).toUpperCase()
+                        : '?',
+                    style: TextStyle(
+                      color: theme.colorScheme.onPrimaryContainer,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: TextField(
@@ -307,10 +361,13 @@ class _LogViewState extends State<LogView> {
                                   const SizedBox(height: 16),
                                   Text(
                                     'Belum ada aktivitas hari ini?',
-                                    style: theme.textTheme.headlineSmall?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: theme.textTheme.headlineSmall
+                                        ?.copyWith(
+                                          color: theme
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                   ),
                                   const SizedBox(height: 8),
                                   ElevatedButton(

@@ -138,10 +138,16 @@ class LogItemWidget extends StatelessWidget {
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                     ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      log.isPublic ? Icons.public : Icons.lock,
+                      size: 16,
+                      color: log.isPublic ? Colors.green.shade700 : null,
+                    ),
                     Spacer(),
                     Icon(
                       Icons.cloud_done,
-                      size: 14,
+                      size: 16,
                       color: Colors.green.shade700,
                     ),
                     const SizedBox(width: 4),
